@@ -1,0 +1,14 @@
+---
+- name: Configure Jenkins
+  hosts: ci-integration
+  remote_user: vagrant
+  roles:
+    - jenkins_deps
+    - jenkins-ci
+    - jenkins_plugins
+
+- name: Configure Build
+  hosts: build-server
+  remote_user: vagrant
+  roles:
+    - build

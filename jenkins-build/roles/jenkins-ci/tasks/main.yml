@@ -1,0 +1,16 @@
+---
+- name: Setup jenkins repo
+  become: yes
+  get_url:
+    url: "{{ jenkins_repo_url }}"
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: Add repo GPG key
+  become: yes
+  rpm_key:
+    state: present
+    key: "{{ jenkins_repo_key_url }}"
+
+- name: Make sure jenkins is installed and enabled
+  become: yes
+  yum: name=jenkins state=installed

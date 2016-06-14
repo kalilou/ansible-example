@@ -1,0 +1,28 @@
+- name: Install Jenkins Plugins
+  with_items:
+  - name: cvs
+  - name: dashboard-view
+  - name: external-monitor-job
+  - name: durable-task
+  - name: git
+  - name: git-client
+  - name: git-server
+  - name: github-api
+  - name: ghprb
+  - name: javadoc
+  - name: junit
+  - name: ldap
+  - name: mailer
+  - name: maven-plugin
+  - name: pam-auth
+  - name: plain-credentials
+  - name: publish-over-ssh
+  - name: ssh-agent
+  - name: ssh-credentials
+  - name: ssh-slaves
+  - name: ssh-credentials
+  - name: swarm
+  get_url: dest="{{ jenkins_home }}/plugins/{{ item.name | mandatory }}.jpi"
+           url="https://updates.jenkins-ci.org/latest/{{ item.name }}.hpi"
+           owner=jenkins group=jenkins mode=0644
+  notify: Restart Jenkins

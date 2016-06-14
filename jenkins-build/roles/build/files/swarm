@@ -1,0 +1,76 @@
+#!/bin/sh
+
+#
+# Startup script for swarm
+#
+# chkconfig: - 98 02
+# description: swarm
+
+### BEGIN INIT INFO
+# Provides: vagrant
+# Required-Start: $local_fs $network $remote_fs
+# Required-Stop: $local_fs $network $remote_fs
+# Should-Start: $named $time
+# Should-Stop: $named $time
+# Default-Start: 2 3 4 5
+# Default-Stop 1 6
+# Short-Description: Startup script for swarm
+# Description: PSwarm
+### END INIT INFO
+. /etc/rc.d/init.d/functions
+
+user=vagrant
+prog=swarm
+run=/usr/bin/java
+jarfile=/opt/swarm-client-2.0/swarm-client-2.0-jar-with-dependencies.jar
+log=/var/log/$prog.log
+pidfile=/var/run/swarm/$prog.pid
+master=http://192.168.50.200:8080
+nodename=$(hostname -s)
+[ -e /var/run/swarm ] || mkdir -p /var/run/swarm && chown vagrant:users /var/run/swarm
+[ -e /var/log/swarm.log ] || touch /var/log/swarm.log && chown vagrant:users /var/log/swarm.log
+
+start() {
+    echo -n $"Starting $prog"
+    [ -s $pidfile ] && ps -p `cat $pidfile` > /dev/null && return 2
+    daemon --user vagrant  --pidfile=${pidfile}  "${run} -jar ${jarfile} -master ${master} -fsroot /home/vagrant -name ${nodename} -executors 1 > $log 2>&1 &"
+    RETVAL=$?
+    usleep 100000
+    pgrep -u vagrant -a |grep swarm-client|cut -f1 -d" " > ${pidfile}
+    [ $RETVAL -eq 0 ] && success || failure
+    echo
+    return $RETVAL
+}
+
+stop() {
+    [ -s $pidfile ] || return 2
+    echo -n $"Stopping $prog: "
+    killproc -p $pidfile $prog
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f $pidfile
+    echo
+    return $RETVAL
+
+
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    status)
+        status -p $pidfile $prog
+        ;;
+    *)
+        echo $"Usage: $prog {start|stop|restart|status}"
+        RETVAL=2
+esac
+
+exit $RETVAL
